@@ -39,11 +39,8 @@ API_KEY = ''
 
 check_for_errors = False
 
-#Most of this code via: https://github.com/miguelgrinberg/flask-video-streaming
-#Rest is a google sheets hack and then some temperature from code: https://www.terminalbytes.com/temperature-using-raspberry-pi-grafana/
-
-# Raspberry Pi camera module (requires picamera package)
-# from camera_pi import Camera
+#Most of this Camera class via: https://github.com/miguelgrinberg/flask-video-streaming
+#Some temperature code from: https://www.terminalbytes.com/temperature-using-raspberry-pi-grafana/
 
 class CameraEvent(object):
     """An Event-like class that signals all active clients when a new frame is
@@ -191,6 +188,7 @@ def video_feed():
 
 @app.route('/temp')
 def get_temp_humid():
+    #endpoint for the javascript to provide on-screen temp/humidity readings
     sensor = Adafruit_DHT.DHT22
     pin = 4
     humidity, temperature = Adafruit_DHT.read_retry(sensor, pin)
@@ -244,13 +242,6 @@ def write_to_spreadsheet(myIPaddress):
 		spreadsheetId=spreadsheetId, range=rangeName).execute()
 	values = result.get('values', [])
 	value_input_option = 'RAW'
-	# ------------------------------------------------------------------------------------
-	# Write to the Google Spreadsheet
-	# ------------------------------------------------------------------------------------
-	# s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-	# s.connect(("8.8.8.8", 80))
-	# myIPaddress = s.getsockname()[0]
-	# s.close()
 
 	messageToSend = "Camera local link is: " + str(myIPaddress) + "/cam/index.html"
 	row = [myIPaddress, messageToSend]
@@ -281,7 +272,6 @@ if __name__ == '__main__':
 
 	HTML_FILE = open(os.path.join('/var/www/html/', 'cam/index.html'), 'w')
 	HTML_FILE.write('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1 viewport-fit=cover"><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="icon" type="image/png" href="baby.png"><link rel="apple-touch-icon" href="baby.png"><link rel="apple-touch-startup-image" href="baby.png"><title>Camera Test</title><link href="css/Merriweather.css" rel="stylesheet"><link href="css/styles.css" rel="stylesheet"></head><body><img id="camera_stream" src="http://' + myIPaddress + ':5000/video_feed"><div class="topCorner"><h2>Cam Title</h2><p class="temp"></p><p class="humid"></p></div><p class="time"></p><script src="js/app.js"></script></body></html>')
-
 	HTML_FILE.close()
 
 	JS_FILE = open(os.path.join('/var/www/html/', 'cam/js/app.js'), 'w')
